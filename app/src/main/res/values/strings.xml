@@ -14,4 +14,6 @@
         completions."
     </string>
     <string name="name">Name</string>
+    <string name="retry">Retry</string>
+    <string name="success">Success</string>
 </resources>

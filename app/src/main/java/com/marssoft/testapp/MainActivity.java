@@ -3,7 +3,9 @@ package com.marssoft.testapp;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.net.Network;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -21,9 +23,11 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.marssoft.testapp.network.NetworkApi;
@@ -37,11 +41,14 @@ public class MainActivity extends AppCompatActivity {
     private EditText mEtEmail;
     private EditText mEtName;
     private EditText mEtPhone;
+    private ScrollView mScrollView;
+    private NetworkApi.NetworkCallback mNetworkCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mScrollView = (ScrollView) findViewById(R.id.user_form);
         mEtEmail = (EditText) findViewById(R.id.etEmail);
         mEtName = (EditText) findViewById(R.id.etName);
         mEtPhone = (EditText) findViewById(R.id.etPhone);
@@ -66,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void attemptSend() {
+        hideSoftKeyboard();
         // Reset errors.
         mEtEmail.setError(null);
         mEtName.setError(null);
@@ -119,9 +127,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Kick off a background task to
             // perform the user data send attempt.
-            NetworkApi.sendUserDataByGet(name, email, phone, null);
+            NetworkApi.sendUserDataByPost(name, email, phone, getNetworkCallback());
         }
     }
+
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
         return email.contains("@");
@@ -135,6 +144,37 @@ public class MainActivity extends AppCompatActivity {
     private boolean isPhoneValid(String phone) {
         //TODO: Replace this with your own logic
         return phone.length() > 12;
+    }
+
+    public NetworkApi.NetworkCallback getNetworkCallback() {
+        if (mNetworkCallback == null) {
+            mNetworkCallback = new NetworkApi.NetworkCallback() {
+                @Override
+                public void onError(String message) {
+                    Snackbar.make(mScrollView, message, Snackbar.LENGTH_SHORT)
+                            .setAction(R.string.retry, new OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    attemptSend();
+                                }
+                            }).show();
+                }
+
+                @Override
+                public void onSuccess(Object result) {
+                    Snackbar.make(mScrollView, R.string.success, Snackbar.LENGTH_SHORT).show();
+                }
+            };
+        }
+        return mNetworkCallback;
+    }
+
+    protected void hideSoftKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(
+                Activity.INPUT_METHOD_SERVICE);
+        if (getCurrentFocus() != null) {
+            inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        }
     }
 
 }
