@@ -1,0 +1,141 @@
+package com.marssoft.testapp;
+
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
+import android.net.Network;
+import android.support.v7.app.AppCompatActivity;
+import android.app.LoaderManager.LoaderCallbacks;
+
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.AsyncTask;
+
+import android.os.Build;
+import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.text.TextUtils;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import com.marssoft.testapp.network.NetworkApi;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity {
+
+    // UI references.
+    private EditText mEtEmail;
+    private EditText mEtName;
+    private EditText mEtPhone;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mEtEmail = (EditText) findViewById(R.id.etEmail);
+        mEtName = (EditText) findViewById(R.id.etName);
+        mEtPhone = (EditText) findViewById(R.id.etPhone);
+        mEtPhone.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == R.id.etPhone || id == EditorInfo.IME_NULL) {
+                    attemptSend();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        Button mBtSend = (Button) findViewById(R.id.btSend);
+        mBtSend.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attemptSend();
+            }
+        });
+    }
+
+    private void attemptSend() {
+        // Reset errors.
+        mEtEmail.setError(null);
+        mEtName.setError(null);
+        mEtPhone.setError(null);
+
+        // Store values at the time of the login attempt.
+        String email = mEtEmail.getText().toString();
+        String name = mEtName.getText().toString();
+        String phone = mEtPhone.getText().toString();
+
+        boolean cancel = false;
+        View focusView = null;
+
+        // Check for a valid name
+        if (TextUtils.isEmpty(name)) {
+            mEtName.setError(getString(R.string.error_field_required));
+            focusView = mEtName;
+            cancel = true;
+        } else if (!isNameValid(name)) {
+            mEtName.setError(getString(R.string.error_name));
+            focusView = mEtName;
+            cancel = true;
+        }
+
+        // Check for a valid email address.
+        if (TextUtils.isEmpty(email)) {
+            mEtEmail.setError(getString(R.string.error_field_required));
+            focusView = mEtEmail;
+            cancel = true;
+        } else if (!isEmailValid(email)) {
+            mEtEmail.setError(getString(R.string.error_invalid_email));
+            focusView = mEtEmail;
+            cancel = true;
+        }
+
+        // Check for a valid phone.
+        if (TextUtils.isEmpty(phone)) {
+            mEtPhone.setError(getString(R.string.error_field_required));
+            focusView = mEtPhone;
+            cancel = true;
+        } else if (!isPhoneValid(phone)) {
+            mEtPhone.setError(getString(R.string.error_phone));
+            focusView = mEtPhone;
+            cancel = true;
+        }
+
+        if (cancel) {
+            // There was an error; don't attempt send and focus the first
+            // form field with an error.
+            focusView.requestFocus();
+        } else {
+            // Kick off a background task to
+            // perform the user data send attempt.
+            NetworkApi.sendUserDataByGet(name, email, phone, null);
+        }
+    }
+    private boolean isEmailValid(String email) {
+        //TODO: Replace this with your own logic
+        return email.contains("@");
+    }
+
+    private boolean isNameValid(String name) {
+        //TODO: Replace this with your own logic
+        return name.length() > 2;
+    }
+
+    private boolean isPhoneValid(String phone) {
+        //TODO: Replace this with your own logic
+        return phone.length() > 12;
+    }
+
+}
+
