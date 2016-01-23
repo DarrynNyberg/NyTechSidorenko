@@ -18,7 +18,11 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.telephony.PhoneNumberFormattingTextWatcher;
+import android.telephony.PhoneNumberUtils;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -62,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+        mEtPhone.addTextChangedListener(new PhoneNumberFormattingTextWatcher());
 
         Button mBtSend = (Button) findViewById(R.id.btSend);
         mBtSend.setOnClickListener(new OnClickListener() {
@@ -142,8 +147,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isPhoneValid(String phone) {
-        //TODO: Replace this with your own logic
-        return phone.length() > 12;
+        if (phone == null) {
+            return false;
+        } else {
+            if (phone.length() < 6 || phone.length() > 13) {
+                return false;
+            } else {
+                return android.util.Patterns.PHONE.matcher(phone).matches();
+            }
+        }
     }
 
     public NetworkApi.NetworkCallback getNetworkCallback() {

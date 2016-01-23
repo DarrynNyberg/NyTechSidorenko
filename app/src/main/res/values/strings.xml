@@ -8,7 +8,7 @@
     <string name="send">Send</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_name">This name is too short</string>
-    <string name="error_phone">This phone is too short</string>
+    <string name="error_phone">This phone has invalid format</string>
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
