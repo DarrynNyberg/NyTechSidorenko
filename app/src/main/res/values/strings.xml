@@ -16,4 +16,6 @@
     <string name="name">Name</string>
     <string name="retry">Retry</string>
     <string name="success">Success</string>
+    <string name="saving">Saving...</string>
+    <string name="empty_answer">Empty answer</string>
 </resources>

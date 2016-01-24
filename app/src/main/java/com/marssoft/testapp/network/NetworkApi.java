@@ -4,6 +4,10 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 
+import com.google.gson.Gson;
+import com.marssoft.testapp.json.MyGsonBuilder;
+import com.marssoft.testapp.pojo.NetworkResponse;
+
 import java.io.IOException;
 
 import okhttp3.FormBody;
@@ -46,9 +50,19 @@ public class NetworkApi {
                     if (!response.isSuccessful()) {
                         throw new IOException("Unexpected code " + response);
                     }
-                    if (callback != null) {
-                        callback.onSuccess(response.body().string());
+                    String responseJson = response.body().string();
+                    Gson gson = MyGsonBuilder.getInstance();
+                    NetworkResponse answer = gson.fromJson(responseJson, NetworkResponse.class);
+                    if (answer == null){
+                        if (callback != null) {
+                            callback.onError(null);
+                        }
+                    } else {
+                        if (callback != null) {
+                            callback.onSuccess(answer);
+                        }
                     }
+
                 } catch (IOException e) {
                     String errMsg = e.getMessage() != null ? e.getMessage() : e.toString();
                     Log.e(TAG, errMsg, e);

@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.net.Network;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -31,10 +32,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.marssoft.testapp.network.NetworkApi;
+import com.marssoft.testapp.pojo.NetworkResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText mEtName;
     private EditText mEtPhone;
     private ScrollView mScrollView;
+    private ProgressDialog mProgressDialog;
     private NetworkApi.NetworkCallback mNetworkCallback;
 
     @Override
@@ -75,6 +79,16 @@ public class MainActivity extends AppCompatActivity {
                 attemptSend();
             }
         });
+        initProgress();
+    }
+
+    private void initProgress() {
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setTitle(null);
+        mProgressDialog.setMessage(getString(R.string.saving));
     }
 
     private void attemptSend() {
@@ -132,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Kick off a background task to
             // perform the user data send attempt.
+            mProgressDialog.show();
             NetworkApi.sendUserDataByPost(name, email, phone, getNetworkCallback());
         }
     }
@@ -159,7 +174,12 @@ public class MainActivity extends AppCompatActivity {
             mNetworkCallback = new NetworkApi.NetworkCallback() {
                 @Override
                 public void onError(String message) {
-                    Snackbar.make(mScrollView, message, Snackbar.LENGTH_SHORT)
+                    hideProgress();
+                    String text = message;
+                    if (TextUtils.isEmpty(message)){
+                        text = getString(R.string.empty_answer);
+                    }
+                    Snackbar.make(mScrollView, text, Snackbar.LENGTH_SHORT)
                             .setAction(R.string.retry, new OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
@@ -170,11 +190,22 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onSuccess(Object result) {
-                    Snackbar.make(mScrollView, R.string.success, Snackbar.LENGTH_SHORT).show();
+                    hideProgress();
+                    NetworkResponse response = (NetworkResponse) result;
+                    Snackbar.make(mScrollView, response.getMessage(), Snackbar.LENGTH_SHORT).show();
                 }
             };
         }
         return mNetworkCallback;
+    }
+
+    private void hideProgress() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mProgressDialog.hide();
+            }
+        });
     }
 
     protected void hideSoftKeyboard() {
