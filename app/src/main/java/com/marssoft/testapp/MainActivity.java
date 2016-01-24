@@ -24,6 +24,7 @@ import android.telephony.PhoneNumberUtils;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -152,8 +153,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
+        if (email == null) {
+            return false;
+        } else {
+            return Patterns.EMAIL_ADDRESS.matcher(email).matches();
+        }
     }
 
     private boolean isNameValid(String name) {
