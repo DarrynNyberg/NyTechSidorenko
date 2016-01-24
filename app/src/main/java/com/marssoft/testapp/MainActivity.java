@@ -150,11 +150,7 @@ public class MainActivity extends AppCompatActivity {
         if (phone == null) {
             return false;
         } else {
-            if (phone.length() < 6 || phone.length() > 13) {
-                return false;
-            } else {
-                return android.util.Patterns.PHONE.matcher(phone).matches();
-            }
+            return android.util.Patterns.PHONE.matcher(phone).matches();
         }
     }
 
